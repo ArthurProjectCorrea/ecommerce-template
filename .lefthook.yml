@@ -1,0 +1,8 @@
+pre-commit:
+  parallel: false
+  commands:
+    lint-staged:
+      run: npx lint-staged
+      include: '**/*.{js,jsx,ts,tsx,json,css,md}'
+    eslint:
+      run: npm run lint
