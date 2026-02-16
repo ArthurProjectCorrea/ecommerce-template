@@ -12,7 +12,7 @@ export default function LogoutButton({
   label,
   toastMessage,
 }: {
-  lang: string;
+  lang?: string;
   label?: string;
   toastMessage?: string;
 }) {
@@ -23,13 +23,19 @@ export default function LogoutButton({
     setLoading(true);
     await supabase.auth.signOut();
     try {
-      await fetch(`/api/auth/session?lang=${lang}`, { method: 'DELETE' });
-    } catch {
-      /* ignore */
+      // forward the lang param if available, otherwise default to 'en'
+      const targetLang = lang || (await import('@/lib/i18n')).defaultLocale;
+      await fetch(`/api/auth/session?lang=${targetLang}`, { method: 'DELETE' });
+      toast.success(toastMessage || 'Signed out');
+      router.push(`/${targetLang}/sign-in`);
+    } catch (err) {
+      // fallback to root sign-in if anything goes wrong
+      console.error('Logout failed', err);
+      toast.success(toastMessage || 'Signed out');
+      router.push('/sign-in');
+    } finally {
+      setLoading(false);
     }
-    toast.success(toastMessage || 'Signed out');
-    setLoading(false);
-    router.push(`/${lang}/sign-in`);
   };
 
   return (

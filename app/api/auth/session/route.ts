@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function POST(req: Request) {
   const url = new URL(req.url);
@@ -43,7 +44,35 @@ export async function POST(req: Request) {
     });
   }
 
-  return NextResponse.json({ ok: true });
+  // decode JWT payload (no verification) to extract user id (sub)
+  let role: string | null = null;
+  try {
+    const payload = access_token.split('.')[1];
+    const json = Buffer.from(
+      payload.replace(/-/g, '+').replace(/_/g, '/'),
+      'base64',
+    ).toString('utf8');
+    const parsed = JSON.parse(json || '{}');
+    const userId = parsed.sub as string | undefined;
+
+    if (userId) {
+      const supabaseAdmin = getSupabaseAdmin();
+      if (supabaseAdmin) {
+        const { data } = await supabaseAdmin
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .limit(1)
+          .single();
+        role = data?.role ?? null;
+      }
+    }
+  } catch {
+    // ignore — default to null
+    role = null;
+  }
+
+  return NextResponse.json({ ok: true, role });
 }
 
 export async function DELETE() {

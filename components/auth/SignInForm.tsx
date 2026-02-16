@@ -37,31 +37,40 @@ export default function SignInForm({ lang, t }: Props) {
         password,
       });
 
+      // debug: log backend response for easier troubleshooting
+      // (this will appear in browser console when sign-in fails)
+      console.debug('supabase.auth.signInWithPassword ->', { data, error });
+
       // If supabase returns an error object, show a generic auth error (do not reveal existence)
       if (error) {
+        console.error('SignIn error', error);
         setLoading(false);
         const status =
           typeof (error as { status?: unknown })?.status === 'number'
             ? (error as { status: number }).status
             : undefined;
+
+        // surface exact message for debugging while still keeping friendly UX
+        const rawMsg =
+          typeof (error as { message?: unknown })?.message === 'string'
+            ? (error as { message: string }).message
+            : '';
+
         const authLike =
           status === 400 ||
           status === 401 ||
-          /invalid|credentials|password|user/i.test(
-            ((error as { message?: unknown })?.message as string) || '',
-          );
+          /invalid|credentials|password|user/i.test(rawMsg);
 
         if (status === 429) {
           toast.error(t.tooManyRequests);
         } else if (authLike) {
+          // if the error looks like auth credentials / unconfirmed, show generic message
           toast.error(t.invalidCredentials);
         } else {
-          const msg =
-            typeof (error as { message?: unknown })?.message === 'string'
-              ? (error as { message: string }).message
-              : t.signInFailed;
-          toast.error(msg);
+          // otherwise show the provider message so we can debug remotely
+          toast.error(rawMsg || t.signInFailed);
         }
+
         return;
       }
 
@@ -81,10 +90,17 @@ export default function SignInForm({ lang, t }: Props) {
             setLoading(false);
             return;
           }
-        }
 
-        toast.success(t.signInSuccess);
-        router.push(`/${lang}/dashboard`);
+          const json = await res.json().catch(() => ({}));
+          const role = (json?.role as string) || 'client';
+
+          toast.success(t.signInSuccess);
+          if (role === 'admin') router.push(`/${lang}/dashboard`);
+          else router.push(`/${lang}/profile`);
+        } else {
+          toast.success(t.signInSuccess);
+          router.push(`/${lang}/profile`);
+        }
       } catch (err: unknown) {
         const m =
           typeof (err as { message?: unknown })?.message === 'string'
