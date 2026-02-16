@@ -1,6 +1,8 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getDictionary, hasLocale } from './dictionaries';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 
 type PageProps = Readonly<{
   params: Promise<{ lang: string }>;
@@ -17,14 +19,31 @@ export default async function RootPage({ params }: PageProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt={t.logoAlt}
-          width={100}
-          height={20}
-          priority
-        />
+        <div className="w-full flex items-center justify-between">
+          <Image
+            className="dark:invert"
+            src="/next.svg"
+            alt={t.logoAlt}
+            width={100}
+            height={20}
+            priority
+          />
+          <div className="flex items-center gap-3">
+            <ThemeSwitcher labels={dict.ThemeSwitcher} />
+            <Link
+              href={`/${lang}/sign-in`}
+              className="text-sm font-medium text-zinc-700 hover:text-zinc-900"
+            >
+              {t.login}
+            </Link>
+            <Link
+              href={`/${lang}/sign-up`}
+              className="rounded-full border px-3 py-2 text-sm font-medium hover:bg-black/5"
+            >
+              {t.register}
+            </Link>
+          </div>
+        </div>
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
           <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
             {t.headline}

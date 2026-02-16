@@ -12,7 +12,9 @@
     "learningCenter": "Learning",
     "center": "center.",
     "deployNow": "Deploy Now",
-    "documentation": "Documentation"
+    "documentation": "Documentation",
+    "login": "Login",
+    "register": "Register"
   },
   "ThemeSwitcher": {
     "ariaLabel": "Switch theme",
@@ -23,5 +25,58 @@
   "LocaleSwitcher": {
     "ariaLabel": "Switch language",
     "en": "English"
+  },
+  "AuthLayout": {
+    "companyName": "Acme Inc."
+  },
+  "SignInPage": {
+    "title": "Login to your account",
+    "description": "Enter your email below to login to your account",
+    "emailLabel": "Email",
+    "emailPlaceholder": "m@example.com",
+    "passwordLabel": "Password",
+    "forgotPassword": "Forgot your password?",
+    "submitButton": "Login",
+    "orContinueWith": "Or continue with",
+    "loginWithGithub": "Login with GitHub",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "signInFailed": "Sign in failed",
+    "invalidCredentials": "Invalid email or password",
+    "signInSuccess": "Signed in successfully",
+    "tooManyRequests": "Too many requests. Please try again later."
+  },
+  "SignUpPage": {
+    "title": "Create your account",
+    "description": "Fill in the form below to create your account",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "John Doe",
+    "emailLabel": "Email",
+    "emailPlaceholder": "m@example.com",
+    "emailDescription": "We'll use this to contact you. We will not share your email with anyone else.",
+    "passwordLabel": "Password",
+    "passwordDescription": "Must be at least 8 characters long.",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordDescription": "Please confirm your password.",
+    "submitButton": "Create Account",
+    "orContinueWith": "Or continue with",
+    "signUpWithGithub": "Sign up with GitHub",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "emailSentTitle": "Verification email sent",
+    "emailSentDescription": "We've sent a confirmation link to {email}. Check your inbox and follow the instructions to activate your account.",
+    "emailSentOk": "OK",
+    "signupFailed": "Signup failed"
+  },
+  "Dashboard": {
+    "welcome": "Welcome, {name}",
+    "logout": "Logout",
+    "signedOut": "Signed out"
+  },
+  "Api": {
+    "missingAccessToken": "Missing access token",
+    "tooManyRequests": "Too many requests. Please try again later.",
+    "missingEmailOrPassword": "Missing email or password",
+    "serverError": "Server error"
   }
 }
