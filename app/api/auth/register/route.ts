@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import type { Locale } from '@/lib/i18n';
 
 // Simple in-memory rate limiter per IP (dev only)
@@ -43,6 +43,14 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: dict.Api.missingEmailOrPassword },
         { status: 400 },
+      );
+    }
+
+    const supabaseAdmin = getSupabaseAdmin();
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Missing Supabase admin environment variables' },
+        { status: 500 },
       );
     }
 

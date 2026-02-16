@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getDictionary, hasLocale } from '@/app/[lang]/dictionaries';
 import { headers } from 'next/headers';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import LogoutButton from '@/components/auth/LogoutButton';
 
 type PageProps = Readonly<{
@@ -26,6 +26,9 @@ export default async function DashboardPage({ params }: PageProps) {
   const token = getCookie('sb-access-token');
 
   if (!token) return notFound();
+
+  const supabaseAdmin = getSupabaseAdmin();
+  if (!supabaseAdmin) return notFound();
 
   const { data, error } = await supabaseAdmin.auth.getUser(token);
   if (error || !data.user) return notFound();
