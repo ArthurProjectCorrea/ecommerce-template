@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import OAuthButton from './OAuthButton';
 import { Spinner } from '@/components/ui/spinner';
 
 import {
@@ -133,9 +134,9 @@ export default function SignUpForm({ lang, t }: Props) {
           </Field>
           <FieldSeparator>{t.orContinueWith}</FieldSeparator>
           <Field>
-            <Button variant="outline" type="button">
+            <OAuthButton provider="github" variant="outline">
               {t.signUpWithGithub}
-            </Button>
+            </OAuthButton>
             <FieldDescription className="px-6 text-center">
               {t.alreadyHaveAccount}{' '}
               <Link href={`/${lang}/auth/sign-in`}>{t.signIn}</Link>

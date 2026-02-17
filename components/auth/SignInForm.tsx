@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import OAuthButton from './OAuthButton';
 import { createClient } from '@/lib/supabaseBrowser';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -150,9 +151,9 @@ export default function SignInForm({ lang, t }: Props) {
         </Field>
         <FieldSeparator className="pt-2">{t.orContinueWith}</FieldSeparator>
         <Field>
-          <Button variant="outline" type="button">
+          <OAuthButton provider="github" variant="outline">
             {t.loginWithGithub}
-          </Button>
+          </OAuthButton>
           <FieldDescription className="text-center">
             {t.noAccount}{' '}
             <Link href={`/${lang}/auth/sign-up`} className="underline">

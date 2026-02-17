@@ -1,7 +1,11 @@
 ﻿import LogoutButton from '@/components/auth/LogoutButton';
 
-export default function ProfilePage({ params }: { params: { lang: string } }) {
-  const { lang } = params;
+type PageProps = Readonly<{
+  params: Promise<{ lang: string }>;
+}>;
+
+export default async function ProfilePage({ params }: PageProps) {
+  const { lang } = await params;
 
   return (
     <main className="p-6">
