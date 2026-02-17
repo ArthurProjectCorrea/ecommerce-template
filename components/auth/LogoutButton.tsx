@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseBrowser';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -21,15 +21,15 @@ export default function LogoutButton({
 
   const onLogout = async () => {
     setLoading(true);
-    await supabase.auth.signOut();
     try {
-      // forward the lang param if available, otherwise default to 'en'
+      const supabase = createClient();
+      await supabase.auth.signOut();
+
+      // client-only sign out; SSR cookies are managed by the official SDK
       const targetLang = lang || (await import('@/lib/i18n')).defaultLocale;
-      await fetch(`/api/auth/session?lang=${targetLang}`, { method: 'DELETE' });
       toast.success(toastMessage || 'Signed out');
       router.push(`/${targetLang}/sign-in`);
     } catch (err) {
-      // fallback to root sign-in if anything goes wrong
       console.error('Logout failed', err);
       toast.success(toastMessage || 'Signed out');
       router.push('/sign-in');

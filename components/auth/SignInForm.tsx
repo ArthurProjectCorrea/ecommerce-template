@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseBrowser';
 import { Spinner } from '@/components/ui/spinner';
 
 type Props = {
@@ -32,16 +32,15 @@ export default function SignInForm({ lang, t }: Props) {
     setLoading(true);
 
     try {
+      const supabase = createClient();
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       // debug: log backend response for easier troubleshooting
-      // (this will appear in browser console when sign-in fails)
       console.debug('supabase.auth.signInWithPassword ->', { data, error });
 
-      // If supabase returns an error object, show a generic auth error (do not reveal existence)
       if (error) {
         console.error('SignIn error', error);
         setLoading(false);
@@ -50,7 +49,6 @@ export default function SignInForm({ lang, t }: Props) {
             ? (error as { status: number }).status
             : undefined;
 
-        // surface exact message for debugging while still keeping friendly UX
         const rawMsg =
           typeof (error as { message?: unknown })?.message === 'string'
             ? (error as { message: string }).message
@@ -64,54 +62,37 @@ export default function SignInForm({ lang, t }: Props) {
         if (status === 429) {
           toast.error(t.tooManyRequests);
         } else if (authLike) {
-          // if the error looks like auth credentials / unconfirmed, show generic message
           toast.error(t.invalidCredentials);
         } else {
-          // otherwise show the provider message so we can debug remotely
           toast.error(rawMsg || t.signInFailed);
         }
 
         return;
       }
 
-      // set httpOnly cookie on server
+      // Determine role directly via Supabase (no intermediate endpoint)
+      let role = 'client';
       try {
-        const access_token = data.session?.access_token;
-        const refresh_token = data.session?.refresh_token;
-        if (access_token) {
-          const res = await fetch(`/api/auth/session?lang=${lang}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ access_token, refresh_token }),
-          });
-          if (!res.ok) {
-            const json = await res.json().catch(() => ({}));
-            toast.error(json?.error || t.signInFailed);
-            setLoading(false);
-            return;
-          }
-
-          const json = await res.json().catch(() => ({}));
-          const role = (json?.role as string) || 'client';
-
-          toast.success(t.signInSuccess);
-          if (role === 'admin') router.push(`/${lang}/dashboard`);
-          else router.push(`/${lang}/profile`);
-        } else {
-          toast.success(t.signInSuccess);
-          router.push(`/${lang}/profile`);
+        const userRes = await supabase.auth.getUser();
+        const userId = userRes?.data?.user?.id || data?.user?.id;
+        if (userId) {
+          const { data: profile } = await supabase
+            .from<{ role: string }>('profiles')
+            .select('role')
+            .eq('id', userId)
+            .limit(1)
+            .single();
+          role = profile?.role ?? 'client';
         }
-      } catch (err: unknown) {
-        const m =
-          typeof (err as { message?: unknown })?.message === 'string'
-            ? (err as { message: string }).message
-            : t.signInFailed;
-        toast.error(m);
-      } finally {
-        setLoading(false);
+      } catch {
+        // fallback to default role
+        role = 'client';
       }
+
+      toast.success(t.signInSuccess);
+      if (role === 'admin') router.push(`/${lang}/dashboard`);
+      else router.push(`/${lang}/profile`);
     } catch (err: unknown) {
-      // network / unexpected error -> show generic auth message
       const msg =
         typeof (err as { message?: unknown })?.message === 'string'
           ? (err as { message: string }).message
@@ -120,6 +101,7 @@ export default function SignInForm({ lang, t }: Props) {
         ? t.invalidCredentials
         : t.signInFailed;
       toast.error(fallback);
+    } finally {
       setLoading(false);
     }
   };

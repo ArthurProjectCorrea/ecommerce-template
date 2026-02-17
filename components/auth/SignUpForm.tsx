@@ -25,7 +25,7 @@ import {
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
 
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseBrowser';
 
 type Props = {
   lang: string;
@@ -45,6 +45,7 @@ export default function SignUpForm({ lang, t }: Props) {
     setLoading(true);
 
     try {
+      const supabase = createClient();
       // Cria o usuário e envia email de confirmação via Supabase
       const { error } = await supabase.auth.signUp({
         email,

@@ -3,6 +3,7 @@ import Negotiator from 'negotiator';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { defaultLocale, locales, type Locale } from '@/lib/i18n';
+import { createClient } from '@/lib/supabaseServer';
 
 function getLocale(request: NextRequest): Locale {
   const headers = {
@@ -11,20 +12,6 @@ function getLocale(request: NextRequest): Locale {
   const languages = new Negotiator({ headers }).languages();
   const matched = match(languages, [...locales], defaultLocale);
   return matched ? (matched as Locale) : defaultLocale;
-}
-
-async function getRole(request: NextRequest): Promise<string | null> {
-  try {
-    const res = await fetch(`${request.nextUrl.origin}/api/auth/me`, {
-      headers: { cookie: request.headers.get('cookie') || '' },
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    const json = await res.json().catch(() => ({}));
-    return (json?.role as string) || null;
-  } catch {
-    return null;
-  }
 }
 
 export async function proxy(request: NextRequest) {
@@ -44,9 +31,29 @@ export async function proxy(request: NextRequest) {
   const segments = pathname.split('/').filter(Boolean);
   const lang = segments[0] || defaultLocale;
 
+  // create server Supabase client (reads cookies via `next/headers`)
+  const supabase = createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData?.user ?? null;
+
+  // fetch role if user present
+  let role: string | null = null;
+  if (user) {
+    try {
+      const { data: profile } = await supabase
+        .from<{ role: string }>('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .limit(1)
+        .single();
+      role = profile?.role ?? null;
+    } catch {
+      role = null;
+    }
+  }
+
   // if user hits `/:lang` root, redirect by role
   if (segments.length === 1 && pathname === `/${lang}`) {
-    const role = await getRole(request);
     if (role === 'admin') {
       request.nextUrl.pathname = `/${lang}/dashboard`;
       return NextResponse.redirect(request.nextUrl);
@@ -60,7 +67,6 @@ export async function proxy(request: NextRequest) {
 
   // Protect dashboard — only admin
   if (pathname.startsWith(`/${lang}/dashboard`)) {
-    const role = await getRole(request);
     if (!role) {
       request.nextUrl.pathname = `/${lang}/sign-in`;
       return NextResponse.redirect(request.nextUrl);
@@ -74,7 +80,6 @@ export async function proxy(request: NextRequest) {
 
   // Protect profile — only client
   if (pathname.startsWith(`/${lang}/profile`)) {
-    const role = await getRole(request);
     if (!role) {
       request.nextUrl.pathname = `/${lang}/sign-in`;
       return NextResponse.redirect(request.nextUrl);
