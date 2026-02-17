@@ -70,28 +70,19 @@ export default function SignInForm({ lang, t }: Props) {
         return;
       }
 
-      // Determine role directly via Supabase (no intermediate endpoint)
-      let role = 'client';
+      // Client SSR flow (no server endpoint): refresh to let middleware pick up session
+      // and perform role-based redirect server-side. This relies on `@supabase/ssr` to
+      // synchronize the client session for SSR.
+      toast.success(t.signInSuccess);
       try {
-        const userRes = await supabase.auth.getUser();
-        const userId = userRes?.data?.user?.id || data?.user?.id;
-        if (userId) {
-          const { data: profile } = await supabase
-            .from<{ role: string }>('profiles')
-            .select('role')
-            .eq('id', userId)
-            .limit(1)
-            .single();
-          role = profile?.role ?? 'client';
-        }
-      } catch {
-        // fallback to default role
-        role = 'client';
+        // trigger server revalidation / middleware run
+        router.refresh();
+      } catch (err) {
+        console.error('router.refresh failed', err);
       }
 
-      toast.success(t.signInSuccess);
-      if (role === 'admin') router.push(`/${lang}/dashboard`);
-      else router.push(`/${lang}/profile`);
+      // as a UX fallback, navigate to profile — middleware will redirect if needed
+      router.push(`/${lang}/profile`);
     } catch (err: unknown) {
       const msg =
         typeof (err as { message?: unknown })?.message === 'string'
