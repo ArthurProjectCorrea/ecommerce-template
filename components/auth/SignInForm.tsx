@@ -118,8 +118,14 @@ export default function SignInForm({ lang, t }: Props) {
           />
         </Field>
         <Field>
-          <div className="flex items-center">
+          <div className="flex items-center justify-between">
             <FieldLabel htmlFor="password">{t.passwordLabel}</FieldLabel>
+            <Link
+              href={`/${lang}/auth/forgot-password`}
+              className="text-sm underline"
+            >
+              {t.forgotPassword}
+            </Link>
           </div>
           <Input
             id="password"
@@ -149,7 +155,7 @@ export default function SignInForm({ lang, t }: Props) {
           </Button>
           <FieldDescription className="text-center">
             {t.noAccount}{' '}
-            <Link href={`/${lang}/sign-up`} className="underline">
+            <Link href={`/${lang}/auth/sign-up`} className="underline">
               {t.signUp}
             </Link>
           </FieldDescription>

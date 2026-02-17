@@ -31,13 +31,13 @@ export default async function RootPage({ params }: PageProps) {
           <div className="flex items-center gap-3">
             <ThemeSwitcher labels={dict.ThemeSwitcher} />
             <Link
-              href={`/${lang}/sign-in`}
+              href={`/${lang}/auth/sign-in`}
               className="text-sm font-medium text-zinc-700 hover:text-zinc-900"
             >
               {t.login}
             </Link>
             <Link
-              href={`/${lang}/sign-up`}
+              href={`/${lang}/auth/sign-up`}
               className="rounded-full border px-3 py-2 text-sm font-medium hover:bg-black/5"
             >
               {t.register}

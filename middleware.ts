@@ -14,24 +14,43 @@ function getLocale(request: NextRequest): Locale {
   return matched ? (matched as Locale) : defaultLocale;
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // If path is for non-localized server routes (OAuth callback, etc.), let it pass
+  const nonLocalizedPrefixes = ['/auth', '/.well-known'];
+  if (nonLocalizedPrefixes.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
+
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`,
   );
 
-  // if no locale present, detect and redirect to localized path
+  // If there's no locale in the URL and the path is localizable, redirect to detected locale
   if (!pathnameHasLocale) {
     const locale = getLocale(request);
     request.nextUrl.pathname = `/${locale}${pathname}`;
     return NextResponse.redirect(request.nextUrl);
   }
 
-  // when path already has locale, enforce role-based redirects / protection
+  // path already has locale — enforce role-based redirects / protection
   const segments = pathname.split('/').filter(Boolean);
   const lang = segments[0] || defaultLocale;
 
-  // create server Supabase client in middleware and collect cookie updates
+  // short-circuit public auth routes to avoid unnecessary DB calls / redirects
+  const publicAuthPaths = [
+    // legacy (route-group) style (kept for backward-compat)
+    `/${lang}/sign-in`,
+    `/${lang}/sign-up`,
+    `/${lang}/forgot-password`,
+    `/${lang}/reset-password`,
+    // explicit /auth/ namespace (current)
+    `/${lang}/auth/sign-in`,
+    `/${lang}/auth/sign-up`,
+    `/${lang}/auth/forgot-password`,
+    `/${lang}/auth/reset-password`,
+  ];
   const response = NextResponse.next();
   type CookieEntry = {
     name: string;
@@ -39,7 +58,18 @@ export async function proxy(request: NextRequest) {
     options?: Record<string, unknown>;
   };
   const pendingCookies: CookieEntry[] = [];
+  const applyPendingCookies = (res: typeof response) => {
+    pendingCookies.forEach(({ name, value, options }) =>
+      res.cookies.set(name, value, options),
+    );
+    return res;
+  };
 
+  if (publicAuthPaths.some((p) => pathname.startsWith(p))) {
+    return applyPendingCookies(response);
+  }
+
+  // create server Supabase client in middleware and collect cookie updates
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -75,14 +105,6 @@ export async function proxy(request: NextRequest) {
       role = null;
     }
   }
-
-  // helper to apply pending cookies to a response
-  const applyPendingCookies = (res: NextResponse) => {
-    pendingCookies.forEach(({ name, value, options }) =>
-      res.cookies.set(name, value, options),
-    );
-    return res;
-  };
 
   // if user hits `/:lang` root, redirect by role
   if (segments.length === 1 && pathname === `/${lang}`) {

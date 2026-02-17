@@ -51,7 +51,7 @@ export default function SignUpForm({ lang, t }: Props) {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/${lang}/sign-in`,
+          emailRedirectTo: `${window.location.origin}/${lang}/auth/sign-in`,
           data: { name },
         },
       });
@@ -138,7 +138,7 @@ export default function SignUpForm({ lang, t }: Props) {
             </Button>
             <FieldDescription className="px-6 text-center">
               {t.alreadyHaveAccount}{' '}
-              <Link href={`/${lang}/sign-in`}>{t.signIn}</Link>
+              <Link href={`/${lang}/auth/sign-in`}>{t.signIn}</Link>
             </FieldDescription>
           </Field>
         </FieldGroup>
@@ -150,7 +150,7 @@ export default function SignUpForm({ lang, t }: Props) {
         t={t}
         onOpenChange={(open) => {
           setShowDialog(open);
-          if (!open) router.replace(`/${lang}/sign-in`);
+          if (!open) router.replace(`/${lang}/auth/sign-in`);
         }}
       />
     </>

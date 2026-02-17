@@ -68,6 +68,31 @@
     "emailSentOk": "OK",
     "signupFailed": "Signup failed"
   },
+  "ForgotPasswordPage": {
+    "title": "Reset your password",
+    "description": "Enter your email and we'll send a reset link.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "m@example.com",
+    "emailDescription": "We will send a password reset link to this email.",
+    "submitButton": "Send reset email",
+    "orContinueWith": "Or continue with",
+    "emailSentTitle": "Password reset email sent",
+    "emailSentDescription": "We've sent a password reset link to {email}. Check your inbox and follow the instructions.",
+    "emailSentOk": "OK",
+    "forgotPasswordFailed": "Failed to send reset email"
+  },
+  "ResetPasswordPage": {
+    "title": "Set a new password",
+    "description": "Choose a strong password to secure your account.",
+    "passwordLabel": "New password",
+    "passwordPlaceholder": "••••••••",
+    "confirmPasswordLabel": "Confirm password",
+    "confirmPasswordPlaceholder": "••••••••",
+    "confirmPasswordMismatch": "Passwords do not match",
+    "submitButton": "Update password",
+    "resetFailed": "Failed to update password",
+    "resetSuccess": "Password updated successfully"
+  },
   "Dashboard": {
     "welcome": "Welcome, {name}",
     "logout": "Logout",

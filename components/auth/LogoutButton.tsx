@@ -28,11 +28,11 @@ export default function LogoutButton({
       // client-only sign out; SSR cookies are managed by the official SDK
       const targetLang = lang || (await import('@/lib/i18n')).defaultLocale;
       toast.success(toastMessage || 'Signed out');
-      router.push(`/${targetLang}/sign-in`);
+      router.push(`/${targetLang}/auth/sign-in`);
     } catch (err) {
       console.error('Logout failed', err);
       toast.success(toastMessage || 'Signed out');
-      router.push('/sign-in');
+      router.push('/auth/sign-in');
     } finally {
       setLoading(false);
     }
